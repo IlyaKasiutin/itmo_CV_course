@@ -124,16 +124,18 @@ class Erosion:
 
 Базовое изображение
 
-![Базовое изображение](images/base_image.png)
+<img src="images/base_image.png" width="200" height="200">
+<img src="images/base_image_1.png" width="200" height="200">
 
 Обработанное изображение
 
-![Обработанное изображение](images/eroded_image.png)
+<img src="images/eroded_image.png" width="200" height="200">
+<img src="images/eroded_image_1.png" width="200" height="200">
 
 ### 2.3. Использование готовой функции
 
 В качестве уже реализованной функции была выбрана функция erode() из библиотеки OpenCV (Python)
-Листинг скрипта использования приведён в приложении 1. [^bignote]
+Листинг скрипта использования приведён в приложении 1.
 
 # 3. Тестирование быстродействия алгоритмов
 
@@ -161,6 +163,7 @@ Wall time: 3min 33s
 CPU times: user 183 ms, sys: 597 ms, total: 780 ms
 Wall time: 776 ms
 ```
+Полный скрипта использования приведён в приложении 2.
 
 # 4. Выводы
 1. Наивная реализация эрозии, несмотря на корректность работы, является вычислительно затратной из-за использования вложенных циклов и отсутствия оптимизаций, что приводит к значительному времени обработки (24 минуты на 1190 изображений).
@@ -174,7 +177,8 @@ Wall time: 776 ms
 
 # Приложение 1. Листинг скрипта замера скорости работы алгоритма эрозии из OpenCV
 
-[^bignote]: test_time.py
+test_time_default.py
+
     ```
     import cv2 as cv
     import glob
@@ -191,7 +195,8 @@ Wall time: 776 ms
                 img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2
             )
         )
-    
+
+
     %%time
     
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3), (-1, -1))
@@ -199,4 +204,35 @@ Wall time: 776 ms
     
     for image in binary_images:
         final_images.append(cv.erode(image, kernel))
+    ```
+
+# Приложение 2. Листинг скрипта замера скорости работы самописного алгоритма эрозии
+
+
+test_time_custom.py
+
+    ```
+    from utils import Erosion, image_to_bin_array
+    import os
+    import cv2
+
+
+    erosion = Erosion()
+
+    images = []
+    input_folder = "flowers_binarized"
+    for dir in os.listdir(input_folder):
+        for filename in os.listdir(os.path.join(input_folder, dir)):
+            if filename.lower().endswith('.jpg'):
+                img_path = os.path.join(input_folder, dir, filename)
+                img = cv2.imread(img_path)
+                if len(img.shape) == 3:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                images.append(image_to_bin_array(os.path.join(input_folder, dir, filename)))
+
+
+    %%time
+
+    for image in tqdm.tqdm(images, total=len(images)):
+        erosion.erode(image)
     ```
