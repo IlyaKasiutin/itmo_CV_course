@@ -160,3 +160,31 @@ Wall time: 776 ms
 # Использованные источники
 1. https://docs.opencv.org/3.4/index.html - официальная документация OpenCV
 2. Лекции по курсу "Компьютерное зрение" ПиРСИИ, 2025
+
+# Приложение 1. Листинг скрипта замера скорости работы алгоритма эрозии из OpenCV
+
+```
+import cv2 as cv
+import glob
+
+from tqdm import tqdm
+
+images = glob.glob("data/*/*.jpg")
+binary_images = []
+
+for image in tqdm(images):
+    img = cv.imread(image, cv.IMREAD_GRAYSCALE)
+    binary_images.append(
+        cv.adaptiveThreshold(
+            img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2
+        )
+    )
+
+%%time
+
+kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3), (-1, -1))
+final_images = []
+
+for image in binary_images:
+    final_images.append(cv.erode(image, kernel))
+```
