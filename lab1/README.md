@@ -81,8 +81,16 @@ void Erosion(int, void*) {
 }
 ```
 
+# 2. Описание разработанной системы
 
-### Своя реализация эрозии
+### 2.1. Описание датасета
+
+В качестве набора данных был выбран датасет [Flower Images Dataset](https://www.kaggle.com/datasets/alsaniipe/flowerdatasets).
+Количество изображений: 1190
+Формат изображений: jpeg
+Средний размер изображений: 500x500px
+
+### 2.2. Своя реализация эрозии
 Был реализован простой класс с единственной главной функцией erode():
 
 ```python
@@ -122,9 +130,12 @@ class Erosion:
 
 ![Обработанное изображение](images/eroded_image.png)
 
+### 2.3. Использование готовой функции
 
-# Бенчмарк методов эрозии
-Для теста производительности использовалась train-выборка на 1190 из датасета с цветами: https://www.kaggle.com/datasets/alsaniipe/flowerdatasets
+В качестве уже реализованной функции была выбрана функция erode() из библиотеки OpenCV (Python)
+Листинг скрипта использования приведён в приложении 1. [^bignote]
+
+# 3. Тестирование быстродействия алгоритмов
 
 Предварительно изображения были бинаризованы с помощью встроенных методов OpenCV:
 ```python
@@ -151,40 +162,41 @@ CPU times: user 183 ms, sys: 597 ms, total: 780 ms
 Wall time: 776 ms
 ```
 
-# Выводы
+# 4. Выводы
 1. Наивная реализация эрозии, несмотря на корректность работы, является вычислительно затратной из-за использования вложенных циклов и отсутствия оптимизаций, что приводит к значительному времени обработки (24 минуты на 1190 изображений).
 2. Реализация эрозии в библиотеке OpenCV демонстрирует высокую производительность (менее 1 секунды на тот же набор данных) благодаря оптимизированным алгоритмам и использованию аппаратных возможностей.
 3. Для практических задач обработки изображений рекомендуется использовать проверенные и оптимизированные библиотеки, такие как OpenCV, чтобы избежать проблем с производительностью.
 4. Выбор структурного элемента (ядра) важен для достижения желаемого результата эрозии, и его форма и размер должны подбираться в зависимости от конкретной задачи.
 
-# Использованные источники
+# 5. Использованные источники
 1. https://docs.opencv.org/3.4/index.html - официальная документация OpenCV
 2. Лекции по курсу "Компьютерное зрение" ПиРСИИ, 2025
 
 # Приложение 1. Листинг скрипта замера скорости работы алгоритма эрозии из OpenCV
 
-```
-import cv2 as cv
-import glob
-
-from tqdm import tqdm
-
-images = glob.glob("data/*/*.jpg")
-binary_images = []
-
-for image in tqdm(images):
-    img = cv.imread(image, cv.IMREAD_GRAYSCALE)
-    binary_images.append(
-        cv.adaptiveThreshold(
-            img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2
+[^bignote]: test_time.py
+    ```
+    import cv2 as cv
+    import glob
+    
+    from tqdm import tqdm
+    
+    images = glob.glob("data/*/*.jpg")
+    binary_images = []
+    
+    for image in tqdm(images):
+        img = cv.imread(image, cv.IMREAD_GRAYSCALE)
+        binary_images.append(
+            cv.adaptiveThreshold(
+                img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2
+            )
         )
-    )
-
-%%time
-
-kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3), (-1, -1))
-final_images = []
-
-for image in binary_images:
-    final_images.append(cv.erode(image, kernel))
-```
+    
+    %%time
+    
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3), (-1, -1))
+    final_images = []
+    
+    for image in binary_images:
+        final_images.append(cv.erode(image, kernel))
+    ```
